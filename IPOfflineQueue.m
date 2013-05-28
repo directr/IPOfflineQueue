@@ -393,11 +393,13 @@ static NSMutableDictionary *_activeQueues = nil;
 
 - (void)setDelayWorkUntilAtMost:(NSDate*)date
 {
-    if ([date timeIntervalSince1970] == [delayWorkUntil timeIntervalSince1970]) return;
+    if(!date) return;
+    
+    double delay = [date timeIntervalSince1970];
     
     // Always pad by 1 second the delayWork spot because we dont want to kill timer for only a 1 second
     // change in time
-    if(delayWorkUntil != nil && date > [delayWorkUntil dateByAddingTimeInterval:1])
+    if(delayWorkUntil != nil && [delayWorkUntil doubleValue] < delay + 1)
     {
         // Already scheduled to delay work
         return;
