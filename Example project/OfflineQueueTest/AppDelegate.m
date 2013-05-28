@@ -39,13 +39,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 - (void)dealloc
 {
     self.window = nil;
-    [super dealloc];
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
-    self.window.rootViewController = [[[ViewController alloc] initWithNibName:@"ViewController" bundle:nil] autorelease];
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window.rootViewController = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
     [self.window makeKeyAndVisible];
     return YES;
 }

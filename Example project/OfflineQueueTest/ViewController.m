@@ -88,7 +88,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 - (IBAction)newQueueButtonTapped:(id)sender
 {
-    self.queue = [[[IPOfflineQueue alloc] initWithName:@"test" delegate:self] autorelease];
+    self.queue = [[IPOfflineQueue alloc] initWithName:@"test" delegate:self];
 }
 
 - (IBAction)queueRunningSwitchChanged:(UISwitch *)sender
@@ -117,7 +117,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {
     [super viewDidLoad];
     lastTaskID = 0;
-    self.queue = [[[IPOfflineQueue alloc] initWithName:@"test" delegate:self] autorelease];
+    self.queue = [[IPOfflineQueue alloc] initWithName:@"test" delegate:self];
 }
 
 - (void)viewDidUnload

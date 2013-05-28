@@ -77,6 +77,8 @@ typedef IPOfflineQueueFilterResult (^IPOfflineQueueFilterBlock)(NSDictionary *us
     NSConditionLock *updateThreadTerminatingLock;
     NSTimeInterval autoResumeInterval;
     NSTimer *autoResumeTimer;
+    NSTimer *delayedWorkTimer;
+    NSDate * delayWorkUntil;
     BOOL halt;
     BOOL halted;
 }
@@ -89,6 +91,7 @@ typedef IPOfflineQueueFilterResult (^IPOfflineQueueFilterBlock)(NSDictionary *us
 
 // userInfo must be serializable
 - (void)enqueueActionWithUserInfo:(NSDictionary *)userInfo;
+- (void)enqueueActionWithUserInfo:(NSDictionary *)userInfo visibleAt:(NSDate*)visibleAt;
 
 - (void)pause;
 - (void)resume;
