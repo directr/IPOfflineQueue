@@ -194,9 +194,26 @@ static NSMutableDictionary *_activeQueues = nil;
     }
 }
 
+- (void)tryToRunQueue
+{
+    if ([updateThreadEmptyLock condition])
+    {
+        // Don't want to block notification-handling, so dispatch this
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            [updateThreadEmptyLock lock];
+            [updateThreadEmptyLock unlockWithCondition:0];
+        });
+    }
+}
+
 - (void)autoResumeTimerFired:(NSTimer*)theTimer { [self tryToAutoResume]; }
 
-- (void)delayWorkTimerFired:(NSTimer*)theTimer { [self tryToAutoResume]; }
+- (void)delayWorkTimerFired:(NSTimer*)theTimer
+{
+    delayedWorkTimer = nil;
+    delayWorkUntil = nil;
+    [self tryToRunQueue];
+}
 
 #pragma mark - Queue control
 
@@ -218,6 +235,7 @@ static NSMutableDictionary *_activeQueues = nil;
         [archiver finishEncoding];
 
         sqlite3_stmt *stmt;
+       
         if (sqlite3_prepare_v2(db, "INSERT INTO queue (params, visibleAt) VALUES (?, ?)", -1, &stmt, NULL) != SQLITE_OK) {
             [[NSException exceptionWithName:@"IPOfflineQueueDatabaseException" 
                 reason:@"Failed to prepare enqueue-insert statement" userInfo:nil
@@ -228,7 +246,6 @@ static NSMutableDictionary *_activeQueues = nil;
         if(visibleAt)
         {
             sqlite3_bind_double(stmt, 2, [visibleAt timeIntervalSince1970]);
-            [self setDelayWorkUntilAtMost:visibleAt];
         }
         else
         {
@@ -240,8 +257,20 @@ static NSMutableDictionary *_activeQueues = nil;
             ] raise];
         }
         sqlite3_finalize(stmt);
-                
-        [updateThreadEmptyLock unlockWithCondition:0];
+ 
+        double diff = [[NSDate date] timeIntervalSince1970] - [visibleAt timeIntervalSince1970];
+        NSLog(@"delay for: %f", diff);
+        
+        if(visibleAt && [[NSDate date] timeIntervalSince1970] < [visibleAt timeIntervalSince1970])
+        {
+            [self setDelayWorkUntilAtMost:visibleAt];
+            [updateThreadEmptyLock unlockWithCondition:1];
+        }
+        else
+        {
+            [updateThreadEmptyLock unlockWithCondition:0];
+ 
+        }
     });
 }
 
@@ -364,9 +393,11 @@ static NSMutableDictionary *_activeQueues = nil;
 
 - (void)setDelayWorkUntilAtMost:(NSDate*)date
 {
-    if (date == delayWorkUntil) return;
+    if ([date timeIntervalSince1970] == [delayWorkUntil timeIntervalSince1970]) return;
     
-    if(date > delayWorkUntil)
+    // Always pad by 1 second the delayWork spot because we dont want to kill timer for only a 1 second
+    // change in time
+    if(delayWorkUntil != nil && date > [delayWorkUntil dateByAddingTimeInterval:1])
     {
         // Already scheduled to delay work
         return;
@@ -385,7 +416,7 @@ static NSMutableDictionary *_activeQueues = nil;
             {
                 // Ready to fire right now
                 delayWorkUntil = nil;
-                [self tryToAutoResume];
+                [self tryToRunQueue];
             }
             else
             {
@@ -469,6 +500,7 @@ static NSMutableDictionary *_activeQueues = nil;
             // If operation is being delayed determine for how long it is being delayed
             // we will wait the minimum waiting time
             delayUntil = visibleAt < delayUntil ? visibleAt : delayUntil;
+            continue;
         }
         
         

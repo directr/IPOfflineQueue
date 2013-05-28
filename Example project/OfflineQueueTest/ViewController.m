@@ -62,6 +62,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     lastTaskID += 10;
 }
 
+- (IBAction)enqueueDelayedTasksButtonTapped:(id)sender
+{
+    int i;
+    for (i = lastTaskID; i < lastTaskID + 10; i++) {
+        [self.queue enqueueActionWithUserInfo:[NSDictionary dictionaryWithObject:[NSString stringWithFormat:@"delayedTask%d", i] forKey:@"taskID"] visibleAt:[[NSDate date] dateByAddingTimeInterval:5]];
+    }
+    lastTaskID += 10;
+}
+
 - (IBAction)clearQueueButtonTapped:(id)sender
 {
     [self.queue clear];
