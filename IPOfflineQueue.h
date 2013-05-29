@@ -79,7 +79,7 @@ typedef IPOfflineQueueFilterResult (^IPOfflineQueueFilterBlock)(NSDictionary *us
     NSTimeInterval autoResumeInterval;
     NSTimer *autoResumeTimer;
     NSTimer *delayedWorkTimer;
-    NSDate * delayWorkUntil;
+    NSNumber * delayWorkUntil;
     BOOL halt;
     BOOL halted;
 }
