@@ -40,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 typedef enum {
    IPOfflineQueueResultSuccess = 0,
+   IPOfflineQueueResultSkip = 1,
    IPOfflineQueueResultFailureShouldPauseQueue
 } IPOfflineQueueResult;
 

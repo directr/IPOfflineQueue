@@ -226,7 +226,7 @@ static NSMutableDictionary *_activeQueues = nil;
 {
     // This is done with GCD so queue-add operations return to the caller as quickly as possible.
     // Using the custom insertQueue ensures that actions are always inserted (and executed) in order.
-    
+
     dispatch_async(insertQueue, ^{
         [updateThreadEmptyLock lock];
         NSMutableData *data = [[NSMutableData alloc] init];
@@ -251,6 +251,7 @@ static NSMutableDictionary *_activeQueues = nil;
         {
             sqlite3_bind_double(stmt, 2, 0.0);
         }
+
         if ([self stepQuery:stmt] != SQLITE_DONE) {
             [[NSException exceptionWithName:@"IPOfflineQueueDatabaseException" 
                 reason:@"Failed to insert new queued item" userInfo:nil
@@ -258,11 +259,13 @@ static NSMutableDictionary *_activeQueues = nil;
         }
         sqlite3_finalize(stmt);
  
-        double diff = [[NSDate date] timeIntervalSince1970] - [visibleAt timeIntervalSince1970];
-        NSLog(@"delay for: %f", diff);
+
         
         if(visibleAt && [[NSDate date] timeIntervalSince1970] < [visibleAt timeIntervalSince1970])
         {
+            double diff = [[NSDate date] timeIntervalSince1970] - [visibleAt timeIntervalSince1970];
+            NSLog(@"delay for: %f", diff);
+            
             [self setDelayWorkUntilAtMost:visibleAt];
             [updateThreadEmptyLock unlockWithCondition:1];
         }
